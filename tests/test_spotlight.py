@@ -294,6 +294,22 @@ class SpotlightTests(unittest.TestCase):
         self.cli('off', '--save-conflicts')
         self.assert_clean()
 
+    def test_live_watcher_waits_for_source_git_operation(self):
+        self.cli('on', 'feature', '--interval', '0.1')
+        source_lock = module.git_path(self.source, 'index.lock')
+        source_lock.touch()
+        self.write(self.source, 'app.txt', 'after git operation')
+        self.wait_for(lambda: bool(json.loads(self.cli('status', '--json').stdout).get('waiting')))
+        self.assertEqual((self.base / 'app.txt').read_text(), 'original\n')
+        source_lock.unlink()
+        self.git(self.source, 'commit', '-am', 'agent commit')
+        self.wait_for(lambda: (self.base / 'app.txt').read_text() == 'after git operation')
+        status = json.loads(self.cli('status', '--json').stdout)
+        self.assertFalse(status['error'])
+        self.assertFalse(status['waiting'])
+        self.cli('off')
+        self.assert_clean()
+
     def test_watcher_crash_and_recovery(self):
         self.write(self.source, 'app.txt', 'preview')
         self.cli('on', 'feature', '--interval', '0.1')

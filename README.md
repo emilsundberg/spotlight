@@ -38,6 +38,8 @@ Use `spotlight --base /path/to/repo …` from elsewhere. `on` accepts a register
 
 `on` mirrors immediately and starts a background poller (one second by default). Switching to another source retires the old watcher. `on <source> --once` makes a snapshot without watching; `sync` refreshes an existing preview once. `list --json` and `status --json` support agent use. `--interval 0.5` changes the watcher interval.
 
+The watcher waits while Git operations are in progress or source files change during a read, then retries automatically. `status` reports that waiting state. Persistent file conflicts pause the watcher and require attention.
+
 **Edit and commit in the source worktree; test in the main checkout.** The main checkout stays on its original branch and its index stays unchanged. Its Git diff therefore shows the preview against that original branch. Do not stage, commit, stash, reset, clean, or switch branches there while Spotlight is active. Use one mirroring tool at a time.
 
 The main checkout must initially be clean, including non-ignored untracked files. Commit or stash your own work before attaching. Spotlight never stashes it automatically.

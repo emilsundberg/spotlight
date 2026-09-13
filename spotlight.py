@@ -22,6 +22,10 @@ class SpotlightError(Exception):
     pass
 
 
+class RetrySnapshot(SpotlightError):
+    """A changing source or busy Git checkout can be retried on the next tick."""
+
+
 def git(root, *args, input=None, allowed=(0,)):
     env = os.environ.copy()
     # Inherited Git overrides must never redirect operations to another index/repo.
@@ -107,7 +111,7 @@ def repository_ready(root):
     for marker in ('index.lock', 'HEAD.lock', 'MERGE_HEAD', 'CHERRY_PICK_HEAD',
                    'REVERT_HEAD', 'rebase-merge', 'rebase-apply', 'sequencer', 'BISECT_START'):
         if git_path(root, marker).exists():
-            raise SpotlightError(f'Git operation in progress in {root}: {marker}')
+            raise RetrySnapshot(f'Git operation in progress in {root}: {marker}')
     if git(root, 'config', '--bool', 'core.sparseCheckout', allowed=(0, 1)).strip() == b'true':
         raise SpotlightError('Sparse checkouts are not supported.')
     flags = git(root, 'ls-files', '-v', '-z').split(b'\0')
@@ -174,7 +178,7 @@ class Spotlight:
                 after = os.fstat(stream.fileno())
             if (after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns) != (
                     info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns):
-                raise SpotlightError(f'File changed while reading; retry: {path}')
+                raise RetrySnapshot(f'File changed while reading; retry: {path}')
             kind, mode = 'file', stat.S_IMODE(info.st_mode)
         digest = hashlib.sha256(data).hexdigest()
         blob = self.objects(state) / digest
@@ -186,6 +190,7 @@ class Spotlight:
 
     def snapshot(self, root, state):
         repository_ready(root)
+        before = identity(root)
         names = set()
         for record in git(root, 'ls-files', '--stage', '-z').split(b'\0'):
             if not record:
@@ -201,13 +206,19 @@ class Spotlight:
             root, 'ls-files', '--others', '--exclude-standard', '-z').split(b'\0') if n)
         result = {}
         for name in sorted(names):
-            entry = self.entry(root, name, state)
+            try:
+                entry = self.entry(root, name, state)
+            except (FileNotFoundError, NotADirectoryError) as error:
+                raise RetrySnapshot(f'Source files changed while reading: {root}') from error
             if entry and entry['kind'] != 'directory':
                 result[name] = entry
             elif entry:
                 # A tracked file may be replaced by a directory containing new files.
                 if not any(other.startswith(name + '/') for other in names):
                     raise SpotlightError(f'Unsupported directory or nested repository: {root / name}')
+        repository_ready(root)
+        if identity(root) != before:
+            raise RetrySnapshot(f'Source Git state changed while reading: {root}')
         return result
 
     def check_identity(self, state):
@@ -340,6 +351,7 @@ class Spotlight:
         state['current'] = target
         state['pending'] = None
         state['error'] = None
+        state['waiting'] = None
         state['updated_at'] = time.time()
         self.save(state)
 
@@ -433,6 +445,10 @@ class Spotlight:
                     return
                 try:
                     self.sync()
+                except RetrySnapshot as error:
+                    state = self.load()
+                    state['waiting'] = str(error)
+                    self.save(state)
                 except (SpotlightError, OSError) as error:
                     state = self.load()
                     state['error'] = str(error)
@@ -455,7 +471,8 @@ class Spotlight:
                     except BlockingIOError:
                         alive = True
             result.update(source=state['source'], watching=alive and not state.get('error'),
-                          error=state.get('error'), recovery_required=state.get('pending') is not None,
+                          error=state.get('error'), waiting=state.get('waiting'),
+                          recovery_required=state.get('pending') is not None,
                           updated_at=state.get('updated_at'), recovery_directory=str(self.root))
         if as_json:
             print(json.dumps(result))
@@ -466,6 +483,8 @@ class Spotlight:
                   ('Watching' if result['watching'] else 'Paused / snapshot only'))
             if result['error']:
                 print(f"Reason: {result['error']}")
+            if result['waiting']:
+                print(f"Waiting: {result['waiting']}")
             if result['recovery_required']:
                 print('Interrupted sync. Run spotlight off to restore.')
 

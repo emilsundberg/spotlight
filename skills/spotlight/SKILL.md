@@ -12,7 +12,7 @@ Use the `spotlight` CLI for an explicitly requested worktree preview. It mirrors
 - Run `spotlight status --json` and `spotlight list --json` in the repository first. Commands also work from a linked worktree; the main checkout is discovered automatically. Outside the repository, use `spotlight --base /path/to/repo <command>`.
 - Attach or switch with `spotlight on /absolute/path/to/worktree`. Exact branch names also work. It starts a background watcher; the command returns immediately.
 - Make code changes and commits **in the source worktree**. Run the existing local app from the main checkout. While attached, the main checkout intentionally looks dirty against its original branch: do not stage, commit, stash, reset, clean, switch branches, or run an agent that edits it.
-- Check `spotlight status --json` after attaching or when preview changes stop appearing. `active` means files are mirrored; `watching` indicates watcher availability. A paused session is still attached.
+- Check `spotlight status --json` after attaching or when preview changes stop appearing. `active` means files are mirrored; `watching` indicates watcher availability. `waiting` means a busy Git operation or changing source will be retried automatically; `error` needs attention. A paused session is still attached.
 - Detach when requested with `spotlight off`. `spotlight recover` performs the same restoration after an interrupted sync or crashed watcher. Do not detach a user's existing preview merely because an unrelated task ended.
 
 ## Constraints and recovery
