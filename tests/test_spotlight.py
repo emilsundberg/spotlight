@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -334,6 +335,108 @@ class SpotlightTests(unittest.TestCase):
         records = json.loads(self.cli('list', '--json', cwd=self.source).stdout)
         self.assertEqual(len(records), 3)
         self.assertEqual(json.loads(self.cli('status', '--json').stdout)['active'], False)
+
+    def test_on_automatically_detects_current_worktree_from_subdirectory(self):
+        folder = self.source / 'deep/nested'
+        folder.mkdir(parents=True)
+        self.write(self.source, 'app.txt', 'automatic')
+        self.cli('on', '--once', cwd=folder)
+        result = json.loads(self.cli('status', '--json', cwd=folder).stdout)
+        self.assertEqual(result['checkout'], str(self.source.resolve()))
+        self.assertEqual(result['base'], str(self.base.resolve()))
+        self.assertEqual(result['role'], 'worktree')
+        self.assertEqual(result['source'], str(self.source.resolve()))
+        self.assertEqual((self.base / 'app.txt').read_text(), 'automatic')
+        self.cli('off', cwd=folder)
+        self.assert_clean()
+
+    def test_no_command_shows_status_without_attaching(self):
+        self.assertIn('worktree checkout', self.cli(cwd=self.source).stdout)
+        self.assertIn('main checkout', self.cli().stdout)
+        self.assertFalse((self.base / '.git/spotlight/active.json').exists())
+
+    def test_main_checkout_never_guesses_between_worktrees(self):
+        self.cli('on', '--once', success=False)
+        self.assertFalse((self.base / '.git/spotlight/active.json').exists())
+        self.assert_clean()
+
+    def test_main_automatically_selects_sole_worktree(self):
+        self.git(self.base, 'worktree', 'remove', str(self.other))
+        self.cli('on', '--once')
+        self.assertEqual(json.loads(self.cli('status', '--json').stdout)['source'], str(self.source.resolve()))
+        self.cli('off')
+        self.assert_clean()
+
+    def test_main_resumes_active_source_even_with_multiple_worktrees(self):
+        self.cli('on', '--once', cwd=self.other)
+        self.write(self.other, 'app.txt', 'resume me')
+        self.cli('on', '--once')
+        self.assertEqual((self.base / 'app.txt').read_text(), 'resume me')
+        self.cli('off')
+        self.assert_clean()
+
+    def test_automatic_on_in_other_worktree_switches_source(self):
+        self.cli('on', '--once', cwd=self.source)
+        self.write(self.other, 'app.txt', 'second')
+        self.cli('on', '--once', cwd=self.other)
+        self.assertEqual((self.base / 'app.txt').read_text(), 'second')
+        self.cli('off')
+        self.assert_clean()
+
+    def test_explicit_path_from_outside_repository_infers_base(self):
+        folder = self.source / 'subdirectory'
+        folder.mkdir()
+        self.cli('on', folder, '--once', cwd=self.root)
+        self.cli('--base', self.source, 'off', cwd=self.root)
+        self.assert_clean()
+
+    def test_explicit_context_prevents_cross_repository_source(self):
+        foreign = self.root / 'foreign'
+        self.git(self.root, 'init', '-b', 'main', str(foreign))
+        self.cli('--base', self.base, 'on', foreign, '--once', success=False)
+        self.assert_clean()
+
+    def test_detection_uses_git_metadata_not_main_branch_name(self):
+        self.git(self.base, 'branch', '-m', 'production')
+        self.git(self.source, 'branch', '-m', 'main')
+        self.original_identity = module.identity(self.base)
+        self.cli('on', '--once', cwd=self.source)
+        self.assertEqual(json.loads(self.cli('status', '--json', cwd=self.source).stdout)['base'],
+                         str(self.base.resolve()))
+        self.cli('off')
+        self.assert_clean()
+
+    def test_detection_through_symlink(self):
+        alias = self.root / 'alias'
+        alias.symlink_to(self.source, target_is_directory=True)
+        self.cli('on', alias, '--once', cwd=self.root)
+        self.cli('off', cwd=alias)
+        self.assert_clean()
+
+    def test_replaced_source_cannot_redirect_watcher_to_another_repository(self):
+        self.cli('on', '--once', cwd=self.source)
+        shutil.rmtree(self.source)
+        self.source.mkdir()
+        self.git(self.source, 'init', '-b', 'main')
+        self.write(self.source, 'app.txt', 'foreign content')
+        self.cli('sync', success=False)
+        self.assertEqual((self.base / 'app.txt').read_text(), 'original\n')
+        self.cli('off')
+        self.assert_clean()
+
+    def test_off_works_after_source_disappears(self):
+        self.write(self.source, 'app.txt', 'preview')
+        self.cli('on', '--once', cwd=self.source)
+        shutil.rmtree(self.source)
+        self.cli('off')
+        self.assert_clean()
+
+    def test_bare_repository_and_non_repository_fail_without_writes(self):
+        bare = self.root / 'bare'
+        self.git(self.root, 'init', '--bare', str(bare))
+        self.cli('on', '--once', cwd=bare, success=False)
+        self.cli('on', '--once', cwd=self.root, success=False)
+        self.assert_clean()
 
     def test_staged_deletion_and_new_file_supported(self):
         self.git(self.source, 'rm', 'delete.txt')
