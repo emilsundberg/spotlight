@@ -44,8 +44,8 @@ class InstallTests(unittest.TestCase):
             result = subprocess.run([sys.executable, str(skill / 'scripts/install.py')],
                                     env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual((home / '.claude/skills/spotlight').resolve(), skill)
-            self.assertEqual((home / '.local/bin/spotlight').resolve(), skill / 'scripts/spotlight.py')
+            self.assertEqual((home / '.claude/skills/spotlight').resolve(), skill.resolve())
+            self.assertEqual((home / '.local/bin/spotlight').resolve(), (skill / 'scripts/spotlight.py').resolve())
             result = subprocess.run([str(home / '.local/bin/spotlight'), '--version'],
                                     env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
