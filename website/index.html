@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f5ed">
+  <meta name="description" content="Preview any Git worktree in your main checkout. Attach, switch, restore. Spotlight works with T3 Code, Herdr, Conductor, and your existing local app.">
+  <meta property="og:title" content="Spotlight — Your worktree. In the spotlight.">
+  <meta property="og:description" content="One local app. Every agent worktree. Attach, switch, restore.">
+  <meta property="og:type" content="website">
+  <title>Spotlight — Your worktree. In the spotlight.</title>
+  <link rel="preload" href="/assets/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="/assets/wordmark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="site">
+<header class="wrap header">
+  <a href="/" aria-label="Spotlight homepage" class="brand"><img src="/assets/wordmark.svg" alt="Spotlight" width="142" height="32"></a>
+  <nav aria-label="Main navigation" class="desktop-nav"><a href="#how-it-works">How it works</a><a href="#your-tools">Your tools</a><a href="#install">Install <span aria-hidden="true">↗</span></a></nav>
+  <details class="mobile-nav"><summary>Menu <span aria-hidden="true">+</span></summary><nav aria-label="Mobile navigation"><a href="#how-it-works">How it works</a><a href="#your-tools">Your tools</a><a href="#install">Install</a></nav></details>
+</header>
+<main id="main">
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow entrance"><span class="signal" aria-hidden="true"></span> A little tool for your local world</div>
+    <div class="hero-heading entrance"><h1>Your worktree.<br>In the spotlight.</h1><div class="hero-aside"><p>Preview any worktree in the<br class="desktop-break"> app you already have running.</p><a class="primary" href="#install">Get Spotlight <span aria-hidden="true">↗</span></a><p class="small mono">macOS + Linux · Agent ready</p></div></div>
+    <div id="how-it-works" class="demo entrance" data-scene="0" aria-label="Interactive illustration of worktree mirroring">
+      <div class="demo-top"><p class="mono"><span class="signal" aria-hidden="true"></span> ONE APP. ANY WORKTREE.</p><button id="playback" class="playback" aria-label="Pause animation">Pause <span aria-hidden="true">Ⅱ</span></button></div>
+      <div class="demo-layout">
+        <div class="source-area"><p class="demo-label mono">YOUR WORKTREES</p><div class="sources">
+          <button class="source selected" data-select="0" aria-pressed="true"><span class="branch-icon" aria-hidden="true">⑂</span><span class="source-text"><span>feature/payments</span><small>T3 Code</small></span><span class="source-dot" aria-hidden="true"></span></button>
+          <button class="source" data-select="1" aria-pressed="false"><span class="branch-icon" aria-hidden="true">⑂</span><span class="source-text"><span>feature/navigation</span><small>Herdr</small></span><span class="source-dot" aria-hidden="true"></span></button>
+          <div class="source resting"><span class="branch-icon" aria-hidden="true">⑂</span><span class="source-text"><span>fix/settings</span><small>Conductor</small></span><span class="rest-dot" aria-hidden="true"></span></div>
+        </div></div>
+        <div class="bridge" aria-hidden="true"><svg viewBox="0 0 280 250" preserveAspectRatio="none"><path class="track" d="M0 40 C130 40 125 125 280 125"/><path class="track" d="M0 125 H280"/><path class="track" d="M0 210 C130 210 125 125 280 125"/><path class="flow flow-a" d="M0 40 C130 40 125 125 280 125"/><path class="flow flow-b" d="M0 125 H280"/></svg><div class="lens"><span></span><span></span><span></span></div><p class="mono bridge-label">ONE-WAY SYNC</p></div>
+        <div class="target-area"><p class="demo-label mono">YOUR MAIN CHECKOUT</p><div class="target"><div class="target-toolbar"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="mono">localhost</span><span class="running-dot" aria-label="App running"></span></div><div class="preview"><div class="preview-top"><span class="preview-mark" aria-hidden="true"></span><span class="mono">Your local app</span><span class="preview-menu" aria-hidden="true">☰</span></div><div class="preview-visual" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-orbit orbit-three"></span><span class="art-core"></span></div><div class="preview-bottom"><span id="preview-branch">feature/payments</span><span class="live-label" id="live-label">Live preview</span></div></div></div><p class="target-note mono">SAME SERVER. SAME LOCAL SETUP.</p></div>
+      </div>
+      <div class="demo-bottom"><p class="terminal mono"><span aria-hidden="true">$</span> <span id="demo-command">spotlight on</span><span class="cursor" aria-hidden="true"></span></p><p class="demo-result" id="demo-result">Worktree attached.</p></div>
+      <div class="demo-progress" aria-hidden="true"><span></span></div>
+    </div>
+    <div class="scene-controls" role="group" aria-label="Demo stages"><button data-select="0" class="scene selected" aria-pressed="true"><span class="mono">01</span> Attach</button><span class="scene-line" aria-hidden="true"></span><button data-select="1" class="scene" aria-pressed="false"><span class="mono">02</span> Switch</button><span class="scene-line" aria-hidden="true"></span><button data-select="2" class="scene" aria-pressed="false"><span class="mono">03</span> Restore</button><p>Try it. Click a worktree.</p></div>
+  </div>
+</section>
+<section class="principles"><div class="wrap"><dl class="principle-grid"><div class="reveal"><dt><span class="mono">01 /</span> One command in.</dt><dd>Git finds your worktree and main checkout.</dd></div><div class="reveal"><dt><span class="mono">02 /</span> Your setup stays.</dt><dd>Keep your ignored files and local dependencies.</dd></div><div class="reveal"><dt><span class="mono">03 /</span> One command out.</dt><dd>Restore your original files with <code>spotlight off</code>.</dd></div></dl></div></section>
+<section id="your-tools" class="tools-section"><div class="wrap"><div class="section-heading reveal"><p class="eyebrow mono">FITS YOUR FLOW</p><h2>Your agent.<br>Your worktrees.</h2><p>No integration to configure. Just Git.</p></div><div class="tool-guide reveal"><div class="tool-tabs" role="tablist" aria-label="Choose your coding tool"><button role="tab" id="tab-t3" aria-selected="true" aria-controls="tool-panel" data-tool="t3" tabindex="0">T3 Code</button><button role="tab" id="tab-herdr" aria-selected="false" aria-controls="tool-panel" data-tool="herdr" tabindex="-1">Herdr</button><button role="tab" id="tab-conductor" aria-selected="false" aria-controls="tool-panel" data-tool="conductor" tabindex="-1">Conductor</button><button role="tab" id="tab-git" aria-selected="false" aria-controls="tool-panel" data-tool="git" tabindex="-1">Plain Git</button></div><div id="tool-panel" role="tabpanel" aria-labelledby="tab-t3"><div><p class="step-caption mono" id="tool-label">WORKING IN T3 CODE</p><h3>Open your worktree’s terminal.</h3><p>Run this from the worktree, then test in your main checkout.</p></div><div class="mini-terminal"><p class="mono"><span>$</span> spotlight on</p><span class="mini-note">Main checkout detected. Preview attached.</span></div><div class="agent-tip"><span class="mono">OR ASK YOUR AGENT</span><p>“Spotlight this worktree.”</p></div></div></div></div></section>
+<section id="install" class="install-section"><div class="wrap"><div class="section-heading reveal"><p class="eyebrow mono">SMALL INSTALL. BIG DIFFERENCE.</p><h2>Put it to work.</h2><p>Install once. Spotlight from any worktree.</p></div><div class="install-grid reveal"><div class="install-option"><div class="option-heading"><span class="mono">01 / LET YOUR AGENT DO IT</span><button class="copy" data-copy="agent-prompt" aria-label="Copy agent installation prompt">Copy prompt <span aria-hidden="true">↗</span></button></div><p id="agent-prompt">Install Spotlight from https://github.com/emilsundberg/spotlight. Follow the README to install the CLI and agent skill. Show me which checkout I’m in. Don’t start mirroring yet.</p><p class="option-note">Includes the skill for Codex and Claude Code.</p></div><div class="install-option"><div class="option-heading"><span class="mono">02 / OR USE YOUR TERMINAL</span><button class="copy" data-copy="install-command" aria-label="Copy terminal installation commands">Copy commands <span aria-hidden="true">↗</span></button></div><pre class="mono"><code id="install-command">gh repo clone emilsundberg/spotlight ~/Code/spotlight
+python3 ~/Code/spotlight/install.py</code></pre><p class="option-note">Git · Python 3.10+ · GitHub CLI · macOS or Linux</p></div></div><p class="access-note">Private preview. A GitHub account with repository access is required.</p><details class="quickstart"><summary>After installing <span aria-hidden="true">+</span></summary><div class="quickstart-content"><div><p class="mono">spotlight on</p><p>Attach this worktree.</p></div><div><p class="mono">spotlight on feature-name</p><p>Switch to another worktree.</p></div><div><p class="mono">spotlight off</p><p>Restore the main checkout.</p></div><p class="quickstart-note">Edit in the worktree; test in the main checkout. Start with a clean main checkout. Add <code>~/.local/bin</code> to PATH if prompted. New agent sessions can discover the installed skill.</p></div></details></div></section>
+</main>
+<footer><div class="wrap footer"><a href="/" class="footer-name">spotlight</a><p>A little light on what’s next.</p><a href="#install">Get started <span aria-hidden="true">↗</span></a></div></footer>
+</div><div id="copy-status" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

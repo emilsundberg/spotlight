@@ -15,3 +15,24 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover -s tests -v
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - run: npm install --prefix "$RUNNER_TEMP/spotlight-browser" playwright@1.63.0
+      - run: '"$RUNNER_TEMP/spotlight-browser/node_modules/.bin/playwright" install --with-deps chromium --only-shell'
+      - name: Test website interactions and responsive layouts
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/spotlight-browser/node_modules/playwright
+        run: |
+          python3 -m http.server 4178 --bind 127.0.0.1 --directory website > /tmp/spotlight-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS http://127.0.0.1:4178/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/website.cjs
