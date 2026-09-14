@@ -31,6 +31,15 @@ const assert = require('node:assert/strict');
   assert.match(await page.locator('.quickstart').textContent(), /Turn Spotlight off and restore my main checkout/);
   assert.equal(await page.locator('#install-command').count(), 0);
   assert.equal(await page.locator('header nav a').count(), 1);
+  for (const button of await page.locator('[data-copy]').all()) {
+    const target = await button.getAttribute('data-copy');
+    await button.click();
+    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), (await page.locator(`#${target}`).textContent()).trim());
+  }
+  assert.equal(await page.locator('.prompt-callout').count(), 5);
+  assert.doesNotMatch(await page.locator('body').innerText(), /Requires access to the private GitHub repository|\b0[123]\b/);
+  assert.equal(await page.locator('.install-nav a').evaluate(el => getComputedStyle(el).borderBottomWidth), '0px');
+
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 900});
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `Overflow at ${width}px`);
