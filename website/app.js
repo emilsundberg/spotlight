@@ -67,10 +67,10 @@ if (window.matchMedia('(pointer: fine)').matches) {
 }
 const tools = { t3: 'T3 CODE', herdr: 'HERDR', conductor: 'CONDUCTOR', git: 'PLAIN GIT' };
 const toolInstructions = {
-  t3: 'Use the terminal in your task’s worktree. Run Spotlight, then test in the main checkout.',
-  herdr: 'Use the worktree Herdr created for your task. Run Spotlight, then test in the main checkout.',
-  conductor: 'Turn off Conductor’s built-in Spotlight first. Then run this in your workspace terminal.',
-  git: 'Create a worktree with git worktree add, then open a terminal inside it and run Spotlight.',
+  t3: 'In T3 Code, open the task running in your worktree. Ask its agent to attach the preview.',
+  herdr: 'In Herdr, open the agent session for your task’s worktree. Ask it to attach the preview.',
+  conductor: 'Turn off Conductor’s built-in Spotlight first. Then ask the agent in your workspace to attach the preview.',
+  git: 'Open your coding agent in a Git worktree and ask it to attach the preview.',
 };
 const tabs = [...document.querySelectorAll('[data-tool]')];
 function activateTab(tab) {
@@ -96,7 +96,7 @@ document.querySelectorAll('[data-copy]').forEach(button => button.addEventListen
   const status = document.querySelector('#copy-status');
   try {
     await navigator.clipboard.writeText(text);
-    status.textContent = 'Copied. Ready for your terminal or agent.';
+    status.textContent = 'Prompt copied.';
   } catch {
     const range = document.createRange();
     range.selectNodeContents(document.getElementById(button.dataset.copy));
@@ -108,4 +108,3 @@ document.querySelectorAll('[data-copy]').forEach(button => button.addEventListen
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => status.classList.remove('show'), 3200);
 }));
-document.querySelectorAll('.mobile-nav a').forEach(link => link.addEventListener('click', () => document.querySelector('.mobile-nav').removeAttribute('open')));
